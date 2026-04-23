@@ -22,6 +22,8 @@ type GooglePhoto = {
   baseUrl: string;
 };
 
+const EXPO_PROXY_REDIRECT = "https://auth.expo.io/@sahil6383/ai-gallery";
+
 function extractTokenFromUrl(url: string): string | null {
   if (!url) return null;
 
@@ -53,14 +55,6 @@ export default function GalleryScreen() {
   const [showGModal, setShowGModal] = useState(false);
   const [gToken, setGToken] = useState<string | null>(null);
 
-  const fetchGooglePhotos = async (token?: string | null) => {
-    const qs = token ? `?token=${encodeURIComponent(token)}` : "";
-    const res = await fetch(`${BACKEND_URL}/api/google/photos${qs}`);
-    const data = await res.json();
-    setGPhotos(data.photos || []);
-    setShowGModal(true);
-  };
-
   // ── Load gallery ─────────────────────────────
   const load = useCallback(async () => {
     try {
@@ -87,25 +81,32 @@ export default function GalleryScreen() {
   try {
     setGLoading(true);
 
-    const callbackUrl = `${BACKEND_URL}/api/auth/google/callback`;
-    const authUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
+    const redirectUri = "https://auth.expo.io/@sahil6383/ai-gallery";
+    const authUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
 
-    const result = await WebBrowser.openAuthSessionAsync(authUrl, callbackUrl);
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
     if (result.type !== "success") {
       throw new Error("Login cancelled");
     }
 
-    const token = extractTokenFromUrl(result.url);
+    const url = result.url;
+    const queryString = url.split("?")[1] || "";
+    const params = new URLSearchParams(queryString);
+    const token = params.get("token");
 
-    if (token) {
-      setGToken(token);
-      await fetchGooglePhotos(token);
-      return;
-    }
-    
-    // Fallback for backend-managed sessions where callback doesn't include token
-    await fetchGooglePhotos();
+    if (!token) throw new Error("No token received");
+    setGToken(token);
+
+    // 🔥 Use token to fetch photos
+    const res = await fetch(
+      `${BACKEND_URL}/api/google/photos?token=${token}`
+    );
+
+    const data = await res.json();
+
+    setGPhotos(data.photos || []);
+    setShowGModal(true);
 
   } catch (e: any) {
     Alert.alert("Google Error", e.message);
