@@ -12,7 +12,6 @@ import * as WebBrowser from "expo-web-browser";
 import { useFocusEffect, useRouter } from "expo-router";
 import { api, Photo, photoUri, emotionEmoji, BACKEND_URL } from "../../src/api";
 import { theme, radii, spacing } from "../../src/theme";
-import * as Linking from "expo-linking";
 WebBrowser.maybeCompleteAuthSession();
 
 const { width: W } = Dimensions.get("window");
@@ -32,9 +31,10 @@ export default function GalleryScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Google
-  const [gPhotos, setGPhotos] = useState<GooglePhoto[]>([]);
+ const [gPhotos, setGPhotos] = useState<GooglePhoto[]>([]);
   const [gLoading, setGLoading] = useState(false);
   const [showGModal, setShowGModal] = useState(false);
+  const [gToken, setGToken] = useState<string | null>(null);
 
   // ── Load gallery ─────────────────────────────
   const load = useCallback(async () => {
@@ -60,26 +60,24 @@ export default function GalleryScreen() {
   // ── GOOGLE LOGIN (backend only) ─────────────
  const connectGoogle = async () => {
   try {
-    const redirectUri = Linking.createURL("oauth");
+    setGLoading(true);
 
-    const result = await WebBrowser.openAuthSessionAsync(
-      `${BACKEND_URL}/api/auth/google/login`,
-      redirectUri
-    );
+    const redirectUri = "https://auth.expo.io/@sahil6383/ai-gallery";
+    const authUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
     if (result.type !== "success") {
       throw new Error("Login cancelled");
     }
 
-    // 🔥 Extract token from redirect
-    // const url = result.url;
-    // const token = url.split("token=")[1];
     const url = result.url;
-const queryString = url.split("?")[1] || "";
-const params = new URLSearchParams(queryString);
-const token = params.get("token");
+    const queryString = url.split("?")[1] || "";
+    const params = new URLSearchParams(queryString);
+    const token = params.get("token");
 
     if (!token) throw new Error("No token received");
+    setGToken(token);
 
     // 🔥 Use token to fetch photos
     const res = await fetch(
@@ -93,6 +91,8 @@ const token = params.get("token");
 
   } catch (e: any) {
     Alert.alert("Google Error", e.message);
+  } finally {
+    setGLoading(false);
   }
 };
   // // ── LOAD GOOGLE PHOTOS FROM BACKEND ─────────
@@ -114,9 +114,9 @@ const token = params.get("token");
   //   }
   // };
 
-  const [gToken, setGToken] = useState<string | null>(null);
-
 const loadGooglePhotos = async () => {
+  setGLoading(true);
+  try {
   if (gToken) {
     const res = await fetch(
       `${BACKEND_URL}/api/google/photos?token=${gToken}`
@@ -126,6 +126,9 @@ const loadGooglePhotos = async () => {
     setShowGModal(true);
   } else {
     await connectGoogle();
+  }
+  } finally {
+    setGLoading(false);
   }
 };
 
