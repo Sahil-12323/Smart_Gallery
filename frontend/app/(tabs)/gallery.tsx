@@ -137,7 +137,12 @@ const loadGooglePhotos = async () => {
   setGLoading(true);
   try {
   if (gToken) {
-    await fetchGooglePhotos(gToken);
+    const res = await fetch(
+      `${BACKEND_URL}/api/google/photos?token=${gToken}`
+    );
+    const data = await res.json();
+    setGPhotos(data.photos || []);
+    setShowGModal(true);
   } else {
     await connectGoogle();
   }
