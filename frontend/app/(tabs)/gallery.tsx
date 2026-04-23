@@ -22,6 +22,25 @@ type GooglePhoto = {
   baseUrl: string;
 };
 
+const EXPO_PROXY_REDIRECT = "https://auth.expo.io/@sahil6383/ai-gallery";
+
+function extractTokenFromUrl(url: string): string | null {
+  if (!url) return null;
+
+  const [baseAndQuery, hash = ""] = url.split("#");
+  const queryString = baseAndQuery.split("?")[1] || "";
+
+  const queryParams = new URLSearchParams(queryString);
+  const hashParams = new URLSearchParams(hash);
+
+  return (
+    queryParams.get("token") ||
+    queryParams.get("access_token") ||
+    hashParams.get("token") ||
+    hashParams.get("access_token")
+  );
+}
+
 export default function GalleryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
