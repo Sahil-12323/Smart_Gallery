@@ -1,0 +1,81 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 5: Jewel & Luxury",
+  "reasoning": "A personal AI gallery app needs to feel intimate, premium, and cinematic. Dark mode allows the user's photos (memories) to be the focal point. Using subtle glowing gradients (Aura/Sunset) evokes a feeling of 'smart memory' rather than clinical data. We lean into deep obsidian spaces.",
+  "colors": {
+    "background": "#050505",
+    "surface": "#121212",
+    "surface_glass": "rgba(18, 18, 18, 0.7)",
+    "primary": "#FF8C94",
+    "primary_gradient": "linear-gradient(135deg, #FFC8A2 0%, #FF8C94 100%)",
+    "text_main": "#F5F5F7",
+    "text_muted": "#8A8A8E",
+    "border": "rgba(255, 255, 255, 0.1)",
+    "success": "#32D74B",
+    "accent_chart": "#FFC8A2"
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Outfit, sans-serif",
+      "body": "'IBM Plex Sans', sans-serif"
+    },
+    "hierarchy": {
+      "h1": "text-4xl tracking-tighter font-medium text-white",
+      "h2": "text-2xl tracking-tight font-medium text-white",
+      "h3": "text-lg tracking-tight font-medium text-white",
+      "body": "text-base leading-relaxed text-zinc-300",
+      "caption": "text-xs tracking-[0.2em] uppercase text-zinc-500 font-semibold"
+    }
+  },
+  "layout_spacing": {
+    "container_padding": "p-4 md:p-8",
+    "gap_system": "gap-4 md:gap-8",
+    "bento_grid": "grid grid-cols-2 md:grid-cols-3 gap-3",
+    "surface_strategy": "Glassmorphism for nav and overlays (backdrop-blur-xl bg-black/60). Solid dark surfaces for cards. 1px border-white/10 to ground elements.",
+    "border_radius": "rounded-2xl for main cards, rounded-[32px] for large floating chat bubbles"
+  },
+  "components": {
+    "chat_bubble_ai": "bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl rounded-tl-sm p-4 text-zinc-200",
+    "chat_bubble_user": "bg-gradient-to-br from-[#FFC8A2]/20 to-[#FF8C94]/20 border border-[#FF8C94]/30 text-white rounded-3xl rounded-tr-sm p-4",
+    "photo_card": "relative overflow-hidden rounded-xl border border-white/5 bg-zinc-900 group",
+    "story_cover": "relative h-72 w-full overflow-hidden rounded-2xl group flex flex-col justify-end p-4",
+    "search_bar": "bg-white/5 border border-white/10 rounded-full px-6 py-4 flex items-center backdrop-blur-2xl w-full",
+    "bottom_nav": "fixed bottom-0 w-full bg-black/60 backdrop-blur-2xl border-t border-white/10 pb-8 pt-4 px-6 flex justify-around items-center z-50",
+    "insight_card": "p-5 rounded-2xl bg-zinc-900/50 border border-white/10 relative overflow-hidden"
+  },
+  "motion_and_interaction": {
+    "hover": "transition-transform duration-300 ease-out hover:scale-[1.02]",
+    "active": "active:scale-[0.98]",
+    "image_reveal": "opacity-0 animate-in fade-in duration-500",
+    "chat_enter": "animate-in slide-in-from-bottom-2 fade-in duration-300"
+  },
+  "icons": {
+    "library": "lucide-react",
+    "instructions": "Use consistent stroke width (1.5). Apply primary gradient to active tab icons."
+  },
+  "image_urls": {
+    "friends_vacation": [
+      { "url": "https://images.unsplash.com/photo-1658326227968-f9f1d9087680?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHwzfHxmcmllbmRzJTIwdmFjYXRpb24lMjBzdW5zZXR8ZW58MHx8fHwxNzc2NzA3MzY3fDA&ixlib=rb-4.1.0&q=85", "description": "Friends at beach sunset" },
+      { "url": "https://images.unsplash.com/photo-1763357617062-65a9737e13e5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHw0fHxmcmllbmRzJTIwdmFjYXRpb24lMjBzdW5zZXR8ZW58MHx8fHwxNzc2NzA3MzY3fDA&ixlib=rb-4.1.0&q=85", "description": "Friends vacation sunset" }
+    ],
+    "gym_workout": [
+      { "url": "https://images.pexels.com/photos/36120641/pexels-photo-36120641.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "description": "Gym workout strength training" },
+      { "url": "https://images.pexels.com/photos/31849599/pexels-photo-31849599.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "description": "Strength training pull down" }
+    ],
+    "receipt_ocr": [
+      { "url": "https://images.pexels.com/photos/11364283/pexels-photo-11364283.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "description": "Restaurant bill receipt on table" }
+    ],
+    "ai_abstract_covers": [
+      { "url": "https://images.pexels.com/photos/28408919/pexels-photo-28408919.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "description": "Neon abstract gradient for story covers" },
+      { "url": "https://images.pexels.com/photos/6985272/pexels-photo-6985272.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "description": "Colorful abstract gradient for insights background" }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Use Tailwind CSS for all styling to emulate a mobile app interface on the web viewport.",
+    "Implement the 'Conversational Gallery' as a chat interface where the AI responses contain inline bento-grids of photos.",
+    "Use the provided image URLs as the user's 'Memories' for rendering the gallery, insights, and OCR search scenarios.",
+    "The UI should feel tactile and premium: apply 1px borders with white/10 opacity to separate dark cards from the dark background.",
+    "Do NOT use pure #000000. Use #050505 or #0A0A0A for the main background to prevent OLED smearing while keeping it luxurious.",
+    "All interactive elements MUST include a data-testid attribute in kebab-case."
+  ]
+}
