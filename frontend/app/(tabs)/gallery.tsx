@@ -12,6 +12,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useFocusEffect, useRouter } from "expo-router";
 import { api, Photo, photoUri, emotionEmoji, BACKEND_URL } from "../../src/api";
 import { theme, radii, spacing } from "../../src/theme";
+import Constants from "expo-constants";
 import * as Linking from "expo-linking";
 WebBrowser.maybeCompleteAuthSession();
 
@@ -23,6 +24,25 @@ type GooglePhoto = {
   baseUrl: string;
 };
 
+const EXPO_PROXY_REDIRECT = "https://auth.expo.io/@sahil6383/ai-gallery";
+
+function extractTokenFromUrl(url: string): string | null {
+  if (!url) return null;
+
+  const [baseAndQuery, hash = ""] = url.split("#");
+  const queryString = baseAndQuery.split("?")[1] || "";
+
+  const queryParams = new URLSearchParams(queryString);
+  const hashParams = new URLSearchParams(hash);
+
+  return (
+    queryParams.get("token") ||
+    queryParams.get("access_token") ||
+    hashParams.get("token") ||
+    hashParams.get("access_token")
+  );
+}
+
 export default function GalleryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -32,9 +52,10 @@ export default function GalleryScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Google
-  const [gPhotos, setGPhotos] = useState<GooglePhoto[]>([]);
+ const [gPhotos, setGPhotos] = useState<GooglePhoto[]>([]);
   const [gLoading, setGLoading] = useState(false);
   const [showGModal, setShowGModal] = useState(false);
+  const [gToken, setGToken] = useState<string | null>(null);
 
   // ── Load gallery ─────────────────────────────
   const load = useCallback(async () => {
@@ -60,26 +81,24 @@ export default function GalleryScreen() {
   // ── GOOGLE LOGIN (backend only) ─────────────
  const connectGoogle = async () => {
   try {
-    const redirectUri = Linking.createURL("oauth");
+    setGLoading(true);
 
-    const result = await WebBrowser.openAuthSessionAsync(
-      `${BACKEND_URL}/api/auth/google/login`,
-      redirectUri
-    );
+    const isExpoGo = Constants.appOwnership === "expo";
+    const redirectUri = isExpoGo ? EXPO_PROXY_REDIRECT : Linking.createURL("oauth");
+    const authUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(redirectUri)}&redirect=${encodeURIComponent(redirectUri)}`;
+
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
     if (result.type !== "success") {
       throw new Error("Login cancelled");
     }
 
-    // 🔥 Extract token from redirect
-    // const url = result.url;
-    // const token = url.split("token=")[1];
-    const url = result.url;
-const queryString = url.split("?")[1] || "";
-const params = new URLSearchParams(queryString);
-const token = params.get("token");
+    const token = extractTokenFromUrl(result.url);
 
-    if (!token) throw new Error("No token received");
+    if (!token) {
+      throw new Error(`No token received in redirect URL: ${result.url}`);
+    }
+    setGToken(token);
 
     // 🔥 Use token to fetch photos
     const res = await fetch(
@@ -93,6 +112,8 @@ const token = params.get("token");
 
   } catch (e: any) {
     Alert.alert("Google Error", e.message);
+  } finally {
+    setGLoading(false);
   }
 };
   // // ── LOAD GOOGLE PHOTOS FROM BACKEND ─────────
@@ -114,9 +135,9 @@ const token = params.get("token");
   //   }
   // };
 
-  const [gToken, setGToken] = useState<string | null>(null);
-
 const loadGooglePhotos = async () => {
+  setGLoading(true);
+  try {
   if (gToken) {
     const res = await fetch(
       `${BACKEND_URL}/api/google/photos?token=${gToken}`
@@ -126,6 +147,9 @@ const loadGooglePhotos = async () => {
     setShowGModal(true);
   } else {
     await connectGoogle();
+  }
+  } finally {
+    setGLoading(false);
   }
 };
 
