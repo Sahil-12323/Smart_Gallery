@@ -12,8 +12,6 @@ import * as WebBrowser from "expo-web-browser";
 import { useFocusEffect, useRouter } from "expo-router";
 import { api, Photo, photoUri, emotionEmoji, BACKEND_URL } from "../../src/api";
 import { theme, radii, spacing } from "../../src/theme";
-import Constants from "expo-constants";
-import * as Linking from "expo-linking";
 WebBrowser.maybeCompleteAuthSession();
 
 const { width: W } = Dimensions.get("window");
@@ -83,9 +81,8 @@ export default function GalleryScreen() {
   try {
     setGLoading(true);
 
-    const isExpoGo = Constants.appOwnership === "expo";
-    const redirectUri = isExpoGo ? EXPO_PROXY_REDIRECT : Linking.createURL("oauth");
-    const authUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(redirectUri)}&redirect=${encodeURIComponent(redirectUri)}`;
+    const redirectUri = "https://auth.expo.io/@sahil6383/ai-gallery";
+    const authUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
 
     const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
@@ -93,11 +90,12 @@ export default function GalleryScreen() {
       throw new Error("Login cancelled");
     }
 
-    const token = extractTokenFromUrl(result.url);
+    const url = result.url;
+    const queryString = url.split("?")[1] || "";
+    const params = new URLSearchParams(queryString);
+    const token = params.get("token");
 
-    if (!token) {
-      throw new Error(`No token received in redirect URL: ${result.url}`);
-    }
+    if (!token) throw new Error("No token received");
     setGToken(token);
 
     // 🔥 Use token to fetch photos
